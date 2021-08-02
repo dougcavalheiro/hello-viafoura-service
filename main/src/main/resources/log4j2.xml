@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Exposed environment variables
+    LOG_APPENDER_NAME: Used to select which log appender to use. For example, you can provide 'ConsoleJsonAppender' to use a json appender.
+    LOG_APP_LEVEL: Application log level relying on application's unique package structure. For example: 'vhbagci.com.github'
+    LOG_VIAFOURA_LEVEL: Viafoura Code Base's logging level relying 'com.viafoura' as a package name.
+    LOG_ROOT_LEVEL: All of the code base including 3rd part libraries. The other log levels would override this setting for the given packages.
+    For example, you may use the following settings for production:
+        LOG_APPENDER_NAME=ConsoleJsonAppender;LOG_APP_LEVEL_=INFO;LOG_ROOT_LEVEL=ERROR;LOG_VIAFOURA_LEVEL=WARN
+-->
+<!-- Configuration#monitorInterval (<Configuration status="WARN" monitorInterval="60">)
+    Using the `monitorInterval` parameter, we can ask log4j 2 to reapply configuration changes dynamically
+    without avoiding a need to restart the application /pods or edit any kind of deployment configuration other than the
+    configuration file itself.
+
+    For example; this would let you apply commented out settings for adding Burst or Regex filters on the fly.
+-->
+<Configuration status="WARN">
+    <Appenders>
+        <!--        Documentation for filters: https://logging.apache.org/log4j/2.x/manual/filters.html-->
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <!--            <BurstFilter level="INFO" rate="1" maxBurst="2" onMismatch="DENY" onMatch="NEUTRAL"/>-->
+            <!--            <RegexFilter regex=".*Please filter me!.*" onMatch="DENY" onMismatch="ACCEPT"/>-->
+            <PatternLayout pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss,SSS} %-5level %logger{1.} - %msg%n}{ERROR=Red, WARN=Yellow, INFO=White, DEBUG=White, TRACE=White}"/>
+        </Console>
+
+        <Console name="ConsoleJsonAppender" target="SYSTEM_OUT">
+            <BurstFilter level="INFO" rate="100" maxBurst="5" onMismatch="DENY" onMatch="NEUTRAL"/>
+            <!--            <RegexFilter regex=".*Please filter me!.*" useRawMsg="true" onMatch="DENY" onMismatch="ACCEPT"/>-->
+            <JsonLayout complete="false" compact="true" stacktraceAsString="true" eventEol="true">
+                <!--                Using the following syntax we can add custom values to each log-->
+                <!--                <KeyValuePair key="myCustomField" value="myCustomValue" />-->
+            </JsonLayout>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="com.viafoura.commentimport" level="${env:LOG_APP_LEVEL:-TRACE}"/>
+        <Logger name="com.viafoura" level="${env:LOG_VIAFOURA_LEVEL:-INFO}"/>
+        <Logger name="org.jooq.tools.LoggerListener" level="${env:LOG_ROOT_LEVEL:-INFO}"/>
+        <Root level="${env:LOG_ROOT_LEVEL:-WARN}">
+            <AppenderRef ref="${env:LOG_APPENDER_NAME:-ConsoleAppender}"/>
+        </Root>
+    </Loggers>
+</Configuration>

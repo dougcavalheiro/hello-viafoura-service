@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'com.github.spotbugs' version '4.6.2'
+}
+
+dependencies {
+    implementation libs.viafouraApiCommon
+    implementation project(':api-generated')
+
+    implementation libs.guice
+    implementation libs.javaxAnnotationApi
+    implementation libs.rxjava2
+    implementation libs.vertxCore
+    implementation libs.vertxWeb
+    implementation libs.vertxWebApiContract
+
+    implementation libs.viafouraCommonMessages
+    implementation(libs.viafouraAuthApi) {
+        exclude group: 'com.squareup.okio'
+        exclude module: 'com.squareup.okio'
+    }
+    implementation(libs.viafouraCommonApiClients) {
+        exclude group: 'com.squareup.okio'
+        exclude module: 'com.squareup.okio'
+    }
+    implementation libs.viafouraCommonVertx
+    implementation libs.commonsCodec
+
+    implementation libs.httpclient
+    implementation libs.slf4jApi
+    implementation libs.typesafeConfig
+
+    implementation libs.commonsLang3
+
+    compile(libs.viafouraCommonServiceFramework) {
+        exclude group: 'com.squareup.okio'
+        exclude module: 'com.squareup.okio'
+    }
+
+    compileOnly libs.lombok
+    implementation libs.spotbugsAnnotations
+    spotbugsPlugins libs.sbContrib
+    annotationProcessor libs.lombok
+
+    testImplementation libs.mockitoCore
+    testImplementation libs.junitJupiterApi
+    testRuntimeOnly libs.junitJupiterEngine
+}
+
+spotbugs {
+    excludeFilter = file("spotbugsExclude.xml")
+}

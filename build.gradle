@@ -1,0 +1,104 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven { url 'https://vf-maven-pub.s3.amazonaws.com/snapshots' }
+        maven { url 'https://vf-maven-pub.s3.amazonaws.com/release' }
+    }
+    dependencies {
+        classpath 'com.viafoura.plugins:gradle-plugins:4.0.0'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'application'
+    id 'jacoco'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+}
+
+//apply plugin: 'com.viafoura.plugins.vfpipe-version'
+
+allprojects {
+    group = 'com.viafoura.helloviafoura'
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+
+    repositories {
+        jcenter()
+        mavenLocal()
+    }
+
+    apply from: "$rootDir/dependencies_versions.gradle"
+    apply plugin: 'com.viafoura.plugins.aws-repository'
+
+    task junitTests(type: Test) {
+        useJUnitPlatform {
+        }
+        reports {
+            junitXml.enabled = true
+            html.enabled = false
+        }
+    }
+
+    test.dependsOn(junitTests)
+
+    // exclude random logging backends. we only want log4j2
+    configurations.all {
+        exclude module: 'slf4j-simple'
+        exclude module: 'logback-classic'
+        exclude module: 'slf4j-log4j12'
+        // there are some apps that use log4j1 without a facade
+        // for those we have a compile dependency later with an api bridge to log4j2
+        exclude module: 'log4j'
+    }
+
+
+    configurations.all {
+        resolutionStrategy {
+            libs.each { k, v ->
+                force(v)
+            }
+            force("com.squareup.okio:okio:1.17.2")
+            force("javax.xml.bind:jaxb-api:2.3.1")
+            force("org.apache.httpcomponents:httpcore:4.4.11")
+            force("org.apache.logging.log4j:log4j-api:2.12.1")
+            force("org.yaml:snakeyaml:1.23")
+            force("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.8.11")
+
+            failOnVersionConflict()
+        }
+    }
+}
+
+dependencies {
+    compile project(':main')
+    compile libs.swaggerAnnotations
+    compile libs.gson
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+}
+
+setMainClassName('io.vertx.core.Launcher')
+
+run {
+    args = ['run', 'com.viafoura.helloviafoura.api.MainVerticle']
+}
+
+shadowJar {
+    setArchivesBaseName('hello-viafoura-service')
+    setArchiveClassifier('fat')
+
+    manifest {
+        attributes(
+                'Main-Verticle': 'com.viafoura.helloviafoura.api.MainVerticle',
+                'Main-Class': 'io.vertx.core.Launcher'
+        )
+    }
+
+    mergeServiceFiles {
+        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+    }
+
+    zip64 true
+}

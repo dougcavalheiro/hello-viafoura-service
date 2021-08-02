@@ -1,0 +1,83 @@
+// Our Viafoura artifact repository
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven { url 'https://vf-maven-pub.s3.amazonaws.com/snapshots' }
+        maven { url 'https://vf-maven-pub.s3.amazonaws.com/release' }
+    }
+
+    dependencies {
+        classpath 'com.viafoura.plugins:gradle-plugins:4.0.0'
+    }
+}
+//////////////////////////////////////////////////////////////////////////////////
+
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow'
+    id "org.openapi.generator"
+    id 'org.hidetake.swagger.generator' version '2.10.0'
+}
+
+// Apply the open-api-generator plugin
+apply plugin: 'com.viafoura.plugins.open-api-generator'
+// apply plugin: 'com.viafoura.plugins.aws-publish'
+
+swaggerSources {
+    helloviafoura {
+        inputFile = file('hello-viafoura-service.yaml')
+    }
+}
+
+// generateVfSwaggerUI runs generateSwaggerUI task from org.hidetake.swagger.generator plugin to created swaggerUI components.
+// SwaggerUI could be asked via /swagger-ui/index.html path.
+task generateVfSwaggerUI(dependsOn: 'generateSwaggerUI')  {
+    doLast {
+        def sourceDirectory = 'build/swagger-ui-helloviafoura'
+        def destinationDirectory = './../main/src/main/resources/webroot/swagger-ui'
+        println "Deleting $destinationDirectory directory!"
+        delete destinationDirectory
+        println "Moving generated swagger ui files from $sourceDirectory into $destinationDirectory directory!"
+        copy {
+            from sourceDirectory
+            into destinationDirectory
+        }
+    }
+}
+
+openApiGenerateVertxServerJava.finalizedBy generateVfSwaggerUI
+
+dependencies {
+    swaggerUI libs.swaggerUI
+    compile libs.r4jCircuitBreaker
+    compile libs.r4jRetry
+    compile libs.metricsCore
+    compile libs.rxjava2
+    compile libs.vertxCore
+    compile (libs.viafouraApiCommon) {
+        exclude group: 'com.squareup.okio'
+        exclude module: 'com.squareup.okio'
+    }
+    compile libs.viafouraCommonVertx
+    implementation libs.vertxRxjava2
+    implementation libs.vertxAuthJwt
+    compile libs.jacksonDatatypeJsr310
+    compile libs.jacksonDatabindNullable
+
+    implementation libs.okhttp3
+    implementation libs.okhttpLoggingInterceptor3
+    compile libs.swaggerAnnotations
+    compile libs.gson
+    compile libs.slf4j
+    compile libs.javaxAnnotationApi
+    compile libs.gsonFire
+    implementation libs.jacksonDatabindNullable
+    compile libs.jsr305
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    testImplementation libs.mockitoCore
+    testImplementation libs.junitJupiterApi
+    testRuntimeOnly libs.junitJupiterEngine
+}

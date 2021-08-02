@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <Match>
+    <Class name="~.*Test"/>
+    <Or>
+      <!-- Ignore certain code smells when unit testing -->
+      <Bug pattern="CE_CLASS_ENVY"/>
+      <Bug pattern="PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS"/>
+      <Bug pattern="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"/>
+      <Bug pattern="RV_RETURN_VALUE_IGNORED"/>
+    </Or>
+  </Match>
+</FindBugsFilter>

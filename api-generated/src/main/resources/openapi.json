@@ -1,0 +1,88 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "description" : "This is a simple and light example on how Viafoura creates microservice projects",
+    "title" : "Hello Viafoura Service",
+    "version" : "1"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:8080"
+  } ],
+  "paths" : {
+    "/v1/hello" : {
+      "get" : {
+        "description" : "This is a simple get request that provides a hello message",
+        "operationId" : "getMyHello",
+        "parameters" : [ {
+          "example" : "Lucy Skyrunner",
+          "explode" : true,
+          "in" : "query",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "style" : "form"
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HelloMessageOutput"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Get the hello message",
+        "tags" : [ "Hello_Viafoura_Operation" ],
+        "x-accepts" : "application/json",
+        "x-serviceid" : "getMyHello",
+        "x-serviceid-varname" : "GETMYHELLO_SERVICE_ID"
+      }
+    }
+  },
+  "components" : {
+    "parameters" : {
+      "HelloMessageInput" : {
+        "example" : "Lucy Skyrunner",
+        "explode" : true,
+        "in" : "query",
+        "name" : "name",
+        "required" : true,
+        "schema" : {
+          "type" : "string"
+        },
+        "style" : "form"
+      }
+    },
+    "schemas" : {
+      "HelloMessageOutput" : {
+        "description" : "A json object with the hello message content and service status\n",
+        "example" : {
+          "message" : "message"
+        },
+        "properties" : {
+          "message" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      }
+    },
+    "securitySchemes" : {
+      "TokenInCookie" : {
+        "description" : "Authentication using a JWT set in a cookie.  Different access levels can be set for each endpoint. Acceptable values are 'optional', 'user', 'mod' (moderator), 'admin', and 'client'. If more than one is specified, the most restrictive level is used.\n",
+        "scheme" : "basic",
+        "type" : "http"
+      },
+      "Token" : {
+        "description" : "Authentication using a JWT via a Bearer token.  Different access levels can be set for each endpoint. Acceptable values are 'optional', 'user', 'mod' (moderator), 'admin', and 'client'. If more than one is specified, the most restrictive level is used.\n",
+        "scheme" : "bearer",
+        "type" : "http"
+      }
+    }
+  }
+}
